@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distribuciones de Probabilidad en la Música</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          processEscapes: true
+        },
+        svg: {
+          fontCache: 'global'
+        }
+      };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/abcjs@6.2.0/dist/abcjs-basic-min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #1e293b;
+        }
+        .distribution-section {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease-in-out;
+        }
+        .distribution-section:hover {
+            transform: translateY(-5px);
+        }
+        h1, h2 {
+            color: #0f172a;
+        }
+        h2 {
+            border-bottom: 2px solid #38bdf8;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+        .formula {
+            font-size: 1.1em;
+            margin: 16px 0;
+            padding: 12px;
+            background-color: #e0f2fe;
+            border-left: 4px solid #38bdf8;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background-color: #0ea5e9;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            margin-top: 8px; /* Added margin for spacing */
+        }
+        button:hover {
+            background-color: #0284c7;
+        }
+        button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+        input[type="number"], input[type="text"], select {
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            width: auto;
+        }
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .info-box {
+            background-color: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+        #enableAudioButton {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background-color: #10b981;
+            box-shadow: 0 4px 14px 0 rgba(0,0,0,0.15);
+        }
+        #enableAudioButton:hover {
+            background-color: #059669;
+        }
+        .status-message {
+            font-style: italic;
+            color: #475569;
+            margin-top: 8px;
+        }
+        .markov-matrix-container {
+            display: grid;
+            grid-template-columns: repeat(4, auto);
+            gap: 5px;
+            align-items: center;
+            justify-content: start;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+        .markov-matrix-container input {
+            width: 50px;
+            padding: 4px;
+            text-align: center;
+        }
+        .markov-matrix-label {
+            font-weight: bold;
+            text-align: center;
+        }
+        .abc-display { /* Style for the sheet music container */
+            margin-top: 16px;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            overflow-x: auto; /* For very long scores */
+            min-height: 80px; /* Minimum height to avoid collapse */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <header class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Música Probabilística: Una Aventura Sonora</h1>
+        <p class="text-lg md:text-xl text-slate-700 max-w-3xl mx-auto">
+            Explora cómo las distribuciones de probabilidad pueden ser herramientas creativas para componer melodías y secuencias musicales.
+            Ajusta los parámetros, genera música, ¡escucha los resultados y ve la partitura!
+        </p>
+    </header>
+
+    <button id="enableAudioButton">Habilitar Audio</button>
+
+    <main id="content" class="max-w-5xl mx-auto">
+
+        <div class="distribution-section">
+            <h2 class="text-2xl font-semibold">Introducción: Probabilidad y Música</h2>
+            <p class="mb-4">
+                La música, en su esencia, es una secuencia de eventos sonoros organizados en el tiempo. La teoría de la probabilidad nos ofrece un marco matemático para modelar la incertidumbre y la aleatoriedad. Al aplicar estos conceptos a la música, podemos explorar nuevas formas de composición, generando texturas, melodías y ritmos con un grado controlado de sorpresa y estructura.
+            </p>
+            <p>
+                Desde simples elecciones al azar hasta complejos procesos estocásticos, las distribuciones de probabilidad permiten a los compositores delegar ciertas decisiones creativas a modelos matemáticos, resultando en obras que pueden ser tanto predecibles en su carácter general como impredecibles en sus detalles específicos. Esta presentación te guiará a través de varias distribuciones y cómo pueden inspirar la creación musical.
+            </p>
+            <div class="info-box">
+                <p><strong>Nota:</strong> Para escuchar las melodías generadas, asegúrate de hacer clic en el botón "Habilitar Audio" (puede aparecer en la esquina inferior derecha) y luego en los botones "Generar y Reproducir Melodía" de cada sección. La partitura aparecerá debajo del botón.</p>
+            </div>
+        </div>
+
+        <div id="uniform" class="distribution-section">
+            <h2 class="text-2xl font-semibold">1. Distribución Uniforme</h2>
+            <p class="mb-2">Asigna la misma probabilidad a cada resultado posible dentro de un rango continuo o discreto.</p>
+            <p class="formula">Continua: $f(x) = \frac{1}{b-a}$ para $a \le x \le b$</p>
+            <p class="text-sm text-gray-600">Donde:</p>
+            <ul class="list-disc list-inside text-sm text-gray-600">
+                <li>$f(x)$: Función de densidad de probabilidad</li>
+                <li>$a$: Límite inferior del rango</li>
+                <li>$b$: Límite superior del rango</li>
+                <li>$b-a$: Ancho total del rango</li>
+            </ul>
+            <p class="formula">Discreta: $P(X=k) = \frac{1}{n}$ para $k \in \{k_1, k_2, ..., k_n\}$</p>
+            <p class="text-sm text-gray-600">Donde:</p>
+            <ul class="list-disc list-inside text-sm text-gray-600">
+                <li>$P(X=k)$: Probabilidad de que la variable aleatoria $X$ tome el valor $k$</li>
+                <li>$n$: Número total de posibles resultados</li>
+                <li>$k_1, k_2, ..., k_n$: Los $n$ posibles valores que puede tomar $X$</li>
+            </ul>
+            <div class="info-box">
+                <p><strong>Contexto Histórico:</strong> Es la distribución más fundamental, implícita en juegos de azar antiguos (dados, monedas).</p>
+                <p><strong>Compositores y Obras:</strong> Usada en música aleatoria simple. John Cage la exploró en obras como "Music of Changes".</p>
+                <p><strong>Aplicación Musical:</strong> Selección aleatoria de notas de una escala definida, duraciones o cualquier parámetro musical.</p>
+            </div>
+            <div class="controls-grid mt-6">
+                <label>Nota Mínima (MIDI): <input type="number" id="uniformMinNote" value="60" class="w-20"></label>
+                <label>Nota Máxima (MIDI): <input type="number" id="uniformMaxNote" value="72" class="w-20"></label>
+                <label>Número de Notas: <input type="number" id="uniformNumNotes" value="16" class="w-20"></label>
+            </div>
+            <button onclick="playUniformMelody()">Generar y Reproducir Melodía Uniforme</button>
+            <div id="abcDisplayUniform" class="abc-display"></div>
+            <p id="statusUniform" class="status-message"></p>
+        </div>
+
+        <div id="bernoulli" class="distribution-section">
+            <h2 class="text-2xl font-semibold">2. Distribución de Bernoulli</h2>
+            <p class="mb-2">Modela un experimento con dos posibles resultados: éxito (1) o fracaso (0).</p>
+            <p class="formula">$P(X=k) = p^k (1-p)^{1-k}$ para $k \in \{0,1\}$</p>
+            <p class="text-sm text-gray-600">Donde:</p>
+            <ul class="list-disc list-inside text-sm text-gray-600">
+                <li>$P(X=k)$: Probabilidad de obtener el resultado $k$</li>
+                <li>$k$: Resultado del experimento (0 para fracaso, 1 para éxito)</li>
+                <li>$p$: Probabilidad de éxito</li>
+                <li>$1-p$: Probabilidad de fracaso</li>
+            </ul>
+            <div class="info-box">
+                 <p><strong>Contexto Histórico:</strong> Nombrada por Jacob Bernoulli (siglo XVII-XVIII).</p>
+                 <p><strong>Aplicación Musical:</strong> Decidir si una nota se toca o es un silencio; elegir entre dos alturas, duraciones o articulaciones.</p>
+            </div>
+            <div class="controls-grid mt-6">
+                <label>Prob. de Nota (0-1): <input type="number" step="0.1" id="bernoulliP" value="0.7" class="w-20"></label>
+                <label>Nota Éxito (MIDI): <input type="number" id="bernoulliNoteSuccess" value="67" class="w-20"></label>
+                <label>Nota Fracaso (MIDI, opc.): <input type="number" id="bernoulliNoteFailure" value="60" class="w-20"></label>
+                <label>Nº Eventos: <input type="number" id="bernoulliNumEvents" value="16" class="w-20"></label>
+            </div>
+            <button onclick="playBernoulliMelody()">Generar y Reproducir Melodía Bernoulli</button>
+            <div id="abcDisplayBernoulli" class="abc-display"></div>
+            <p id="statusBernoulli" class="status-message"></p>
+        </div>
+
+        <div id="binomial" class="distribution-section">
+            <h2 class="text-2xl font-semibold">3. Distribución Binomial</h2>
+            <p class="mb-2">Describe el número de éxitos en $n$ ensayos de Bernoulli independientes.</p>
+            <p class="formula">$P(X=k) = \binom{n}{k} p^k (1-p)^{n-k}$</p>
+            <p class="text-sm text-gray-600">Donde:</p>
+            <ul class="list-disc list-inside text-sm text-gray-600">
+                <li>$P(X=k)$: Probabilidad de obtener exactamente $k$ éxitos</li>
+                <li>$\binom{n}{k}$: Número de combinaciones de $n$ elementos tomados de $k$ en $k$</li>
+                <li>$n$: Número total de ensayos o intentos</li>
+                <li>$k$: Número de éxitos buscados</li>
+                <li>$p$: Probabilidad de éxito en cada ensayo</li>
+                <li>$1-p$: Probabilidad de fracaso en cada ensayo</li>
+            </ul>
+            <div class="info-box">
+                <p><strong>Contexto Histórico:</strong> También desarrollada por Jacob Bernoulli.</p>
+                <p><strong>Aplicación Musical:</strong> Número de notas acentuadas en una frase; densidad de notas en un compás.</p>
+            </div>
+            <div class="controls-grid mt-6">
+                <label>Nº Ensayos (n): <input type="number" id="binomialN" value="8" class="w-20"></label>
+                <label>Prob. Éxito (p): <input type="number" step="0.1" id="binomialP" value="0.5" class="w-20"></label>
+                <label>Nota Base (MIDI): <input type="number" id="binomialBaseNote" value="60" class="w-20"></label>
+                 <p class="text-sm col-span-full">Idea: El resultado (nº éxitos) se suma a la nota base.</p>
+            </div>
+            <button onclick="playBinomialMelody()">Generar y Reproducir Melodía Binomial</button>
+            <div id="abcDisplayBinomial" class="abc-display"></div>
+            <p id="statusBinomial" class="status-message"></p>
+        </div>
+
+        <div id="poisson" class="distribution-section">
+            <h2 class="text-2xl font-semibold">4. Distribución de Poisson</h2>
+            <p class="mb-2">Probabilidad de un número de eventos en un intervalo fijo de tiempo/espacio.</p>
+            <p class="formula">$P(X=k) = \frac{\lambda^k e^{-\lambda}}{k!}$</p>
+            <p class="text-sm text-gray-600">Donde:</p>
+            <ul class="list-disc list-inside text-sm text-gray-600">
+                <li>$P(X=k)$: Probabilidad de que ocurran exactamente $k$ eventos</li>
+                <li>$\lambda$: Tasa media de ocurrencia de eventos</li>
+                <li>$k$: Número de eventos observados</li>
+                <li>$e$: Número de Euler (aproximadamente 2.71828)</li>
+                <li>$k!$: Factorial de $k$</li>
+            </ul>
+            <div class="info-box">
+                <p><strong>Contexto Histórico:</strong> Siméon Denis Poisson (siglo XIX).</p>
+                <p><strong>Compositores y Obras:</strong> Iannis Xenakis ("Metastaseis", "Pithoprakta") para densidad de eventos sonoros.</p>
+                <p><strong>Aplicación Musical:</strong> Número de notas por compás; aparición de eventos sonoros.</p>
+            </div>
+            <div class="controls-grid mt-6">
+                <label>Tasa Media ($\lambda$): <input type="number" step="0.1" id="poissonLambda" value="3" class="w-20"></label>
+                <label>Nº Intervalos: <input type="number" id="poissonNumIntervals" value="8" class="w-20"></label>
+                <label>Nota Fija (MIDI): <input type="number" id="poissonNote" value="72" class="w-20"></label>
+                <p class="text-sm col-span-full">Idea: En cada intervalo, 'k' notas de altura fija.</p>
+            </div>
+            <button onclick="playPoissonMelody()">Generar y Reproducir Melodía Poisson</button>
+            <div id="abcDisplayPoisson" class="abc-display"></div>
+            <p id="statusPoisson" class="status-message"></p>
+        </div>
+
+        <div id="normal" class="distribution-section">
+            <h2 class="text-2xl font-semibold">5. Distribución Normal (Gaussiana)</h2>
+            <p class="mb-2">Distribución continua en forma de campana.</p>
+            <p class="formula">$f(x | \mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}$</p>
+            <p class="text-sm text-gray-600">Donde:</p>
+            <ul class="list-disc list-inside text-sm text-gray-600">
+                <li>$f(x)$: Función de densidad de probabilidad</li>
+                <li>$\mu$: Media de la distribución</li>
+                <li>$\sigma$: Desviación estándar</li>
+                <li>$\sigma^2$: Varianza</li>
+                <li>$x$: Valor de la variable aleatoria</li>
+                <li>$e$: Número de Euler (aproximadamente 2.71828)</li>
+                <li>$\pi$: Número Pi (aproximadamente 3.14159)</li>
+            </ul>
+            <div class="info-box">
+                <p><strong>Contexto Histórico:</strong> De Moivre, Laplace, Gauss (siglo XVIII-XIX).</p>
+                <p><strong>Aplicación Musical:</strong> Alturas agrupadas alrededor de una nota central; dinámicas; duraciones.</p>
+            </div>
+            <div class="controls-grid mt-6">
+                <label>Media ($\mu$, Nota MIDI): <input type="number" id="normalMean" value="65" class="w-20"></label>
+                <label>Desv. Est. ($\sigma$): <input type="number" step="0.1" id="normalStdDev" value="3" class="w-20"></label>
+                <label>Nº Notas: <input type="number" id="normalNumNotes" value="16" class="w-20"></label>
+            </div>
+            <button onclick="playNormalMelody()">Generar y Reproducir Melodía Normal</button>
+            <div id="abcDisplayNormal" class="abc-display"></div>
+            <p id="statusNormal" class="status-message"></p>
+        </div>
+
+        <div id="exponential" class="distribution-section">
+            <h2 class="text-2xl font-semibold">6. Distribución Exponencial</h2>
+            <p class="mb-2">Tiempo entre eventos en un proceso de Poisson.</p>
+            <p class="formula">$f(x; \lambda) = \lambda e^{-\lambda x}$ para $x \ge 0$</p>
+            <p class="text-sm text-gray-600">Donde:</p>
+            <ul class="list-disc list-inside text-sm text-gray-600">
+                <li>$f(x)$: Función de densidad de probabilidad</li>
+                <li>$\lambda$: Parámetro de tasa (inverso del tiempo medio entre eventos)</li>
+                <li>$x$: Tiempo hasta el próximo evento</li>
+                <li>$e$: Número de Euler (aproximadamente 2.71828)</li>
+            </ul>
+            <div class="info-box">
+                <p><strong>Contexto Histórico:</strong> Relacionada con Poisson.</p>
+                <p><strong>Aplicación Musical:</strong> Generar duraciones de notas o silencios.</p>
+            </div>
+            <div class="controls-grid mt-6">
+                <label>Tasa ($\lambda$): <input type="number" step="0.1" id="expoLambda" value="2.0" class="w-20"></label>
+                <label>Nota Fija (MIDI): <input type="number" id="expoNote" value="60" class="w-20"></label>
+                <label>Nº Duraciones: <input type="number" id="expoNumDurations" value="12" class="w-20"></label>
+                <p class="text-sm col-span-full">Idea: Genera duraciones para nota fija. Duración escalada.</p>
+            </div>
+            <button onclick="playExponentialMelody()">Generar y Reproducir Melodía Exponencial</button>
+            <div id="abcDisplayExponential" class="abc-display"></div>
+            <p id="statusExponential" class="status-message"></p>
+        </div>
+        
+        <div id="markov" class="distribution-section">
+            <h2 class="text-2xl font-semibold">7. Cadenas de Markov</h2>
+            <p class="mb-2">Secuencia de eventos donde la probabilidad de cada evento depende del estado anterior.</p>
+            <p class="formula">Matriz de Transición: $P = [p_{ij}]$, donde $p_{ij} = P(X_{t+1}=j | X_t=i)$</p>
+            <p class="text-sm text-gray-600">Donde:</p>
+            <ul class="list-disc list-inside text-sm text-gray-600">
+                <li>$P$: Matriz de transición</li>
+                <li>$p_{ij}$: Probabilidad de transición del estado $i$ al estado $j$</li>
+                <li>$X_t$: Estado del sistema en el tiempo $t$</li>
+                <li>$X_{t+1}$: Estado del sistema en el siguiente paso de tiempo</li>
+            </ul>
+            <div class="info-box">
+                <p><strong>Contexto Histórico:</strong> Andrey Markov (principios s. XX).</p>
+                <p><strong>Compositores y Obras:</strong> Hiller & Isaacson ("Illiac Suite"), Xenakis ("Analogique A-B").</p>
+                <p><strong>Aplicación Musical:</strong> Generar melodías con coherencia local basadas en una matriz de transición.</p>
+            </div>
+            <div class="mt-6">
+                <p class="mb-2 font-medium">Matriz de Transición (3 estados: C4, E4, G4):</p>
+                <p class="text-sm mb-2">Filas: Actual, Columnas: Siguiente. Suma de fila = 1.</p>
+                <div class="markov-matrix-container">
+                    <span></span><span class="markov-matrix-label">a C4</span><span class="markov-matrix-label">a E4</span><span class="markov-matrix-label">a G4</span>
+                    <span class="markov-matrix-label">De C4:</span>
+                    <input type="number" step="0.1" id="m00" value="0.1" min="0" max="1">
+                    <input type="number" step="0.1" id="m01" value="0.7" min="0" max="1">
+                    <input type="number" step="0.1" id="m02" value="0.2" min="0" max="1">
+                    <span class="markov-matrix-label">De E4:</span>
+                    <input type="number" step="0.1" id="m10" value="0.4" min="0" max="1">
+                    <input type="number" step="0.1" id="m11" value="0.2" min="0" max="1">
+                    <input type="number" step="0.1" id="m12" value="0.4" min="0" max="1">
+                    <span class="markov-matrix-label">De G4:</span>
+                    <input type="number" step="0.1" id="m20" value="0.6" min="0" max="1">
+                    <input type="number" step="0.1" id="m21" value="0.3" min="0" max="1">
+                    <input type="number" step="0.1" id="m22" value="0.1" min="0" max="1">
+                </div>
+                 <p class="text-xs text-slate-600 mb-4">Nota: El sistema normalizará filas si no suman 1.</p>
+                <label>Longitud Melodía: <input type="number" id="markovLength" value="20" class="w-20"></label>
+            </div>
+            <button onclick="playMarkovMelody()">Generar y Reproducir Melodía de Markov</button>
+            <div id="abcDisplayMarkov" class="abc-display"></div>
+            <p id="statusMarkov" class="status-message"></p>
+        </div>
+
+    </main>
+
+    <footer class="text-center mt-12 py-8 border-t border-slate-300">
+        <p class="text-slate-600">&copy; 2024-2025 Música Probabilística Interactiva. Inspirado por las matemáticas y el arte.</p>
+    </footer>
+
+    <script>
+        let synth;
+        let audioEnabled = false;
+        const baseDuration = "8n"; // Corchea como duración base
+        const L_DEFAULT_SECONDS = Tone.Time("8n").toSeconds(); // Segundos para L:1/8 en ABC
+
+        document.getElementById('enableAudioButton').addEventListener('click', async () => {
+            if (!audioEnabled) {
+                await Tone.start();
+                synth = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: "sine" },
+                    envelope: { attack: 0.01, decay: 0.1, sustain: 0.3, release: 0.5 },
+                    volume: -12
+                }).toDestination();
+                audioEnabled = true;
+                console.log("Audio Context iniciado y sintetizador listo.");
+                document.getElementById('enableAudioButton').style.display = 'none';
+            }
+        });
+
+        function setStatus(elementId, message, isError = false) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.textContent = message;
+                el.style.color = isError ? 'red' : '#475569';
+            }
+        }
+        
+        function stopPreviousMelody() {
+            if (synth) {
+                Tone.Transport.stop();
+                Tone.Transport.cancel();
+                synth.releaseAll();
+            }
+        }
+
+        // Helper para convertir MIDI a nota ABC
+        function midiToAbcNoteName(midi) {
+            const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+            const octave = Math.floor(midi / 12) - 1; // MIDI 60 (C4) es octava 4
+            const noteIndex = midi % 12;
+            let note = noteNames[noteIndex];
+
+            if (note.includes("#")) note = "^" + note.charAt(0);
+            else if (note.includes("b")) note = "_" + note.charAt(0); // Aunque no usamos bemoles aquí
+
+            if (octave === 4) { // Octava de Do central (C D E F G A B)
+                // No hacer nada si es mayúscula
+            } else if (octave === 5) { // Octava superior (c d e f g a b)
+                note = note.toLowerCase();
+            } else if (octave > 5) { // Octavas más altas (c' d' etc.)
+                note = note.toLowerCase();
+                for (let i = 0; i < octave - 5; i++) note += "'";
+            } else if (octave < 4) { // Octavas inferiores (C, D, etc.)
+                for (let i = 0; i < 4 - octave; i++) note += ",";
+            }
+            return note;
+        }
+
+        // Helper para convertir duración Tone.js a duración ABC (L:1/8)
+        function getAbcDurationStringFromNotation(toneJsNotationString, L_val_seconds = L_DEFAULT_SECONDS) {
+            const noteSeconds = Tone.Time(toneJsNotationString).toSeconds();
+            const ratio = noteSeconds / L_val_seconds;
+
+            if (Math.abs(ratio - 1) < 0.01) return "";      // Default L (e.g. C)
+            if (Math.abs(ratio - 2) < 0.01) return "2";     // e.g. C2
+            if (Math.abs(ratio - 3) < 0.01) return "3";     // e.g. C3
+            if (Math.abs(ratio - 4) < 0.01) return "4";     // e.g. C4
+            if (Math.abs(ratio - 0.5) < 0.01) return "/2";  // e.g. C/2
+            if (Math.abs(ratio - 0.25) < 0.01) return "/4"; // e.g. C/4
+            if (Math.abs(ratio - 0.125) < 0.01) return "/8";// e.g. C/8
+            if (Math.abs(ratio - 1.5) < 0.01) return "3/2"; // e.g. C3/2 (dotted)
+            if (Math.abs(ratio - 0.75) < 0.01) return "3/4"; // e.g. C3/4
+            if (Math.abs(ratio - 0.375) < 0.01) return "3/8";
+            
+            // Fallback para ratios no comunes (puede no ser estándar ABC)
+            // Intentar N/M simple
+            for (let den = 2; den <= 16; den++) { // Denominadores comunes
+                 for (let num = 1; num <= 32; num++) { // Numeradores comunes
+                    if (Math.abs(num / den - ratio) < 0.015) { // Tolerancia un poco mayor
+                        // Evitar redundancia con los ya definidos
+                        if ((num === 1 && den === 2) || (num === 1 && den === 4) || (num === 1 && den === 8)) continue;
+                        if ((num === 2 && den === 1) || (num === 3 && den === 1) || (num === 4 && den === 1)) continue;
+                        if ((num === 3 && den === 2) || (num === 3 && den === 4) || (num===3 && den===8) ) continue;
+                        return String(num) + "/" + String(den);
+                    }
+                }
+            }
+            return ratio.toFixed(1); // Último recurso, ej: "0.7" - no ideal
+        }
+
+
+        function renderAbcScore(displayId, title, abcNotesArray) {
+            try {
+                const abcHeader = `X:1\nT:${title}\nM:4/4\nL:1/8\nK:C\n`;
+                let abcBodyWithMeasures = "";
+                let currentMeasureBeats = 0;
+                const beatsPerMeasure = 8; // 8 corcheas en un 4/4 si L:1/8
+
+                abcNotesArray.forEach((noteAbc, index) => {
+                    // Asegurar que cada nota tenga una duración válida
+                    let noteWithDuration = noteAbc;
+                    if (!noteAbc.includes('/')) {
+                        noteWithDuration += "1"; // Duración por defecto de corchea
+                    }
+                    abcBodyWithMeasures += noteWithDuration + " ";
+
+                    // Calcular duración
+                    let noteDurationInLUnits = 1; // Default
+                    if (noteAbc.includes('/')) {
+                        const parts = noteAbc.split('/');
+                        if (parts.length === 2 && !isNaN(parts[1])) {
+                            noteDurationInLUnits = 1 / parseFloat(parts[1]);
+                        }
+                    }
+                    currentMeasureBeats += noteDurationInLUnits;
+
+                    // Agregar barra de compás cuando sea necesario
+                    if (currentMeasureBeats >= beatsPerMeasure) {
+                        abcBodyWithMeasures += "| ";
+                        currentMeasureBeats = 0;
+                        if ((index + 1) % 4 === 0) {
+                            abcBodyWithMeasures += "\n";
+                        }
+                    }
+                });
+
+                // Asegurar que termine con barra de compás
+                if (!abcBodyWithMeasures.trim().endsWith("|")) {
+                    abcBodyWithMeasures += "|";
+                }
+
+                const fullAbcString = abcHeader + abcBodyWithMeasures;
+                const displayElement = document.getElementById(displayId);
+                if (displayElement) {
+                    displayElement.innerHTML = ""; // Limpiar partitura anterior
+                    
+                    // Configuración mejorada para renderización
+                    const options = {
+                        responsive: "resize",
+                        staffwidth: displayElement.offsetWidth > 0 ? displayElement.offsetWidth : 600,
+                        paddingleft: 10,
+                        paddingright: 10,
+                        paddingtop: 10,
+                        paddingbottom: 10,
+                        scale: 0.8,
+                        default_note: "1/8",
+                        default_voice: "treble",
+                        generate_midi: true
+                    };
+
+                    // Renderizar partitura
+                    ABCJS.renderAbc(displayId, fullAbcString, options);
+                }
+            } catch (error) {
+                console.error("Error rendering ABC score:", error);
+                const displayElement = document.getElementById(displayId);
+                if (displayElement) {
+                    displayElement.innerHTML = `<div class="text-red-500">Error al renderizar la partitura: ${error.message}</div>`;
+                }
+            }
+        }
+
+        // --- Implementaciones de las Distribuciones (con ABC) ---
+
+        function playUniformMelody() {
+            if (!audioEnabled) { setStatus('statusUniform', "Por favor, habilita el audio primero.", true); return; }
+            stopPreviousMelody();
+            setStatus('statusUniform', "Generando melodía uniforme...");
+
+            const minNote = parseInt(document.getElementById('uniformMinNote').value);
+            const maxNote = parseInt(document.getElementById('uniformMaxNote').value);
+            const numNotes = parseInt(document.getElementById('uniformNumNotes').value);
+            const toneMelody = [];
+            const abcNotes = [];
+            let currentTime = 0;
+
+            for (let i = 0; i < numNotes; i++) {
+                const randomMidi = Math.floor(Math.random() * (maxNote - minNote + 1)) + minNote;
+                const toneJsDur = baseDuration; // "8n"
+                
+                toneMelody.push({ note: Tone.Frequency(randomMidi, "midi").toNote(), time: currentTime, duration: toneJsDur });
+                
+                const abcNoteName = midiToAbcNoteName(randomMidi);
+                const abcDur = getAbcDurationStringFromNotation(toneJsDur);
+                abcNotes.push(abcNoteName + abcDur);
+                
+                currentTime += Tone.Time(toneJsDur).toSeconds();
+            }
+            
+            renderAbcScore('abcDisplayUniform', 'Melodia Uniforme', abcNotes);
+            
+            if (toneMelody.length > 0) {
+                new Tone.Part((time, value) => {
+                    synth.triggerAttackRelease(value.note, value.duration, time);
+                }, toneMelody).start(0);
+                Tone.Transport.start();
+                setStatus('statusUniform', "Reproduciendo melodía uniforme...");
+            } else {
+                setStatus('statusUniform', "No se generaron notas.");
+            }
+            setTimeout(() => setStatus('statusUniform', ""), currentTime * 1000 + 500);
+        }
+
+        function playBernoulliMelody() {
+            if (!audioEnabled) { setStatus('statusBernoulli', "Por favor, habilita el audio primero.", true); return; }
+            stopPreviousMelody();
+            setStatus('statusBernoulli', "Generando melodía Bernoulli...");
+
+            const p = parseFloat(document.getElementById('bernoulliP').value);
+            const noteSuccessMidi = parseInt(document.getElementById('bernoulliNoteSuccess').value);
+            const noteFailureInput = document.getElementById('bernoulliNoteFailure').value;
+            const noteFailureMidi = noteFailureInput === "" ? null : parseInt(noteFailureInput);
+            const numEvents = parseInt(document.getElementById('bernoulliNumEvents').value);
+            const toneMelody = [];
+            const abcNotes = [];
+            let currentTime = 0;
+
+            for (let i = 0; i < numEvents; i++) {
+                const outcome = Math.random() < p;
+                const toneJsDur = baseDuration; // "8n"
+
+                if (outcome) {
+                    toneMelody.push({ note: Tone.Frequency(noteSuccessMidi, "midi").toNote(), time: currentTime, duration: toneJsDur });
+                    abcNotes.push(midiToAbcNoteName(noteSuccessMidi) + getAbcDurationStringFromNotation(toneJsDur));
+                } else if (noteFailureMidi !== null) {
+                    toneMelody.push({ note: Tone.Frequency(noteFailureMidi, "midi").toNote(), time: currentTime, duration: toneJsDur });
+                    abcNotes.push(midiToAbcNoteName(noteFailureMidi) + getAbcDurationStringFromNotation(toneJsDur));
+                } else { // Silencio
+                    abcNotes.push("z" + getAbcDurationStringFromNotation(toneJsDur));
+                }
+                currentTime += Tone.Time(toneJsDur).toSeconds();
+            }
+
+            renderAbcScore('abcDisplayBernoulli', 'Melodia Bernoulli', abcNotes);
+
+            if (toneMelody.length > 0) {
+                new Tone.Part((time, value) => {
+                    synth.triggerAttackRelease(value.note, value.duration, time);
+                }, toneMelody).start(0);
+                Tone.Transport.start();
+                setStatus('statusBernoulli', "Reproduciendo melodía Bernoulli...");
+            } else {
+                 setStatus('statusBernoulli', "Melodía Bernoulli generada (posiblemente solo silencios).");
+            }
+            setTimeout(() => setStatus('statusBernoulli', ""), currentTime * 1000 + 500);
+        }
+
+        function sampleBinomial(n_trials, prob_success) {
+            let successes = 0;
+            for (let i = 0; i < n_trials; i++) {
+                if (Math.random() < prob_success) successes++;
+            }
+            return successes;
+        }
+
+        function playBinomialMelody() {
+            if (!audioEnabled) { setStatus('statusBinomial', "Por favor, habilita el audio primero.", true); return; }
+            stopPreviousMelody();
+            setStatus('statusBinomial', "Generando melodía binomial...");
+
+            const n = parseInt(document.getElementById('binomialN').value);
+            const p = parseFloat(document.getElementById('binomialP').value);
+            const baseNoteMidi = parseInt(document.getElementById('binomialBaseNote').value);
+            const numMeasures = 4; 
+            const toneMelody = [];
+            const abcNotes = [];
+            let currentTime = 0;
+            const toneJsDur = "4n"; // Negras para esta melodía
+
+            for (let i = 0; i < numMeasures; i++) {
+                const numSuccesses = sampleBinomial(n, p);
+                const pitchMidi = Math.min(127, Math.max(0, baseNoteMidi + numSuccesses));
+                
+                toneMelody.push({ note: Tone.Frequency(pitchMidi, "midi").toNote(), time: currentTime, duration: toneJsDur });
+                abcNotes.push(midiToAbcNoteName(pitchMidi) + getAbcDurationStringFromNotation(toneJsDur));
+                
+                currentTime += Tone.Time(toneJsDur).toSeconds();
+            }
+            
+            renderAbcScore('abcDisplayBinomial', 'Melodia Binomial', abcNotes);
+
+            new Tone.Part((time, value) => {
+                synth.triggerAttackRelease(value.note, value.duration, time);
+            }, toneMelody).start(0);
+            Tone.Transport.start();
+            setStatus('statusBinomial', "Reproduciendo melodía binomial...");
+            setTimeout(() => setStatus('statusBinomial', ""), currentTime * 1000 + 500);
+        }
+
+        function samplePoisson(lambda) {
+            let l = Math.exp(-lambda);
+            let k = 0;
+            let p_val = 1;
+            do { k++; p_val *= Math.random(); } while (p_val > l);
+            return k - 1;
+        }
+
+        function playPoissonMelody() {
+            if (!audioEnabled) { setStatus('statusPoisson', "Por favor, habilita el audio primero.", true); return; }
+            stopPreviousMelody();
+            setStatus('statusPoisson', "Generando melodía Poisson...");
+
+            const lambda = parseFloat(document.getElementById('poissonLambda').value);
+            const numIntervals = parseInt(document.getElementById('poissonNumIntervals').value);
+            const fixedNoteMidi = parseInt(document.getElementById('poissonNote').value);
+            const toneMelody = [];
+            const abcNotes = [];
+            let currentTime = 0;
+            const intervalDurationSeconds = Tone.Time("2n").toSeconds(); // Duración de cada "intervalo"
+
+            for (let i = 0; i < numIntervals; i++) {
+                const numEventsInInterval = samplePoisson(lambda);
+                const timePerEventSeconds = numEventsInInterval > 0 ? intervalDurationSeconds / numEventsInInterval : intervalDurationSeconds;
+                
+                for (let j = 0; j < numEventsInInterval; j++) {
+                    const noteActualDurationSeconds = timePerEventSeconds * 0.8; // 80% para separar un poco
+                    const toneJsDur = Tone.Time(noteActualDurationSeconds, "s").toNotation(); // Convertir a "8n", "16n", etc.
+
+                    toneMelody.push({ 
+                        note: Tone.Frequency(fixedNoteMidi, "midi").toNote(), 
+                        time: currentTime + j * timePerEventSeconds, 
+                        duration: toneJsDur
+                    });
+                    abcNotes.push(midiToAbcNoteName(fixedNoteMidi) + getAbcDurationStringFromNotation(toneJsDur));
+                }
+                currentTime += intervalDurationSeconds;
+            }
+
+            renderAbcScore('abcDisplayPoisson', 'Melodia Poisson', abcNotes);
+
+            if (toneMelody.length > 0) {
+                new Tone.Part((time, value) => {
+                    synth.triggerAttackRelease(value.note, value.duration, time);
+                }, toneMelody).start(0);
+                Tone.Transport.start();
+                setStatus('statusPoisson', "Reproduciendo melodía Poisson...");
+            } else {
+                setStatus('statusPoisson', "Melodía Poisson generada (sin eventos).");
+            }
+            setTimeout(() => setStatus('statusPoisson', ""), currentTime * 1000 + 500);
+        }
+        
+        function sampleNormal(mean, stdDev) {
+            let u1 = Math.random(); let u2 = Math.random();
+            let z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+            return z0 * stdDev + mean;
+        }
+
+        function playNormalMelody() {
+            if (!audioEnabled) { setStatus('statusNormal', "Por favor, habilita el audio primero.", true); return; }
+            stopPreviousMelody();
+            setStatus('statusNormal', "Generando melodía Normal...");
+
+            const mean = parseFloat(document.getElementById('normalMean').value);
+            const stdDev = parseFloat(document.getElementById('normalStdDev').value);
+            const numNotes = parseInt(document.getElementById('normalNumNotes').value);
+            const toneMelody = [];
+            const abcNotes = [];
+            let currentTime = 0;
+
+            for (let i = 0; i < numNotes; i++) {
+                const rawPitch = sampleNormal(mean, stdDev);
+                const midiPitch = Math.round(Math.max(0, Math.min(127, rawPitch)));
+                const toneJsDur = baseDuration; // "8n"
+                
+                toneMelody.push({ note: Tone.Frequency(midiPitch, "midi").toNote(), time: currentTime, duration: toneJsDur });
+                abcNotes.push(midiToAbcNoteName(midiPitch) + getAbcDurationStringFromNotation(toneJsDur));
+                currentTime += Tone.Time(toneJsDur).toSeconds();
+            }
+            
+            renderAbcScore('abcDisplayNormal', 'Melodia Normal (Gaussiana)', abcNotes);
+            
+            new Tone.Part((time, value) => {
+                synth.triggerAttackRelease(value.note, value.duration, time);
+            }, toneMelody).start(0);
+            Tone.Transport.start();
+            setStatus('statusNormal', "Reproduciendo melodía Normal...");
+            setTimeout(() => setStatus('statusNormal', ""), currentTime * 1000 + 500);
+        }
+
+        function sampleExponential(lambda) {
+            if (lambda <= 0) return Infinity;
+            return -Math.log(1.0 - Math.random()) / lambda;
+        }
+
+        function playExponentialMelody() {
+            if (!audioEnabled) { setStatus('statusExponential', "Por favor, habilita el audio primero.", true); return; }
+            stopPreviousMelody();
+            setStatus('statusExponential', "Generando melodía Exponencial...");
+
+            const lambda = parseFloat(document.getElementById('expoLambda').value);
+            const fixedNoteMidi = parseInt(document.getElementById('expoNote').value);
+            const numDurations = parseInt(document.getElementById('expoNumDurations').value);
+            const toneMelody = [];
+            const abcNotes = [];
+            let currentTime = 0;
+            const DURATION_SCALE_FACTOR = 0.5;
+
+            for (let i = 0; i < numDurations; i++) {
+                let durationSeconds = sampleExponential(lambda) * DURATION_SCALE_FACTOR;
+                durationSeconds = Math.max(0.1, Math.min(durationSeconds, 2.0)); // Limitar duración
+                const toneJsDur = Tone.Time(durationSeconds, "s").toNotation();
+                
+                toneMelody.push({ 
+                    note: Tone.Frequency(fixedNoteMidi, "midi").toNote(), 
+                    time: currentTime, 
+                    duration: toneJsDur
+                });
+                abcNotes.push(midiToAbcNoteName(fixedNoteMidi) + getAbcDurationStringFromNotation(toneJsDur));
+                currentTime += durationSeconds;
+            }
+
+            renderAbcScore('abcDisplayExponential', 'Melodia Exponencial', abcNotes);
+
+            if (toneMelody.length > 0) {
+                new Tone.Part((time, value) => {
+                    synth.triggerAttackRelease(value.note, value.duration, time);
+                }, toneMelody).start(0);
+                Tone.Transport.start();
+                setStatus('statusExponential', "Reproduciendo melodía Exponencial...");
+            } else {
+                setStatus('statusExponential', "No se generaron duraciones válidas.");
+            }
+            setTimeout(() => setStatus('statusExponential', ""), currentTime * 1000 + 500);
+        }
+
+        function playMarkovMelody() {
+            if (!audioEnabled) { setStatus('statusMarkov', "Por favor, habilita el audio primero.", true); return; }
+            stopPreviousMelody();
+            setStatus('statusMarkov', "Generando melodía de Markov...");
+
+            const states = [60, 64, 67]; // C4, E4, G4
+            const transitionMatrix = [
+                [parseFloat(document.getElementById('m00').value), parseFloat(document.getElementById('m01').value), parseFloat(document.getElementById('m02').value)],
+                [parseFloat(document.getElementById('m10').value), parseFloat(document.getElementById('m11').value), parseFloat(document.getElementById('m12').value)],
+                [parseFloat(document.getElementById('m20').value), parseFloat(document.getElementById('m21').value), parseFloat(document.getElementById('m22').value)]
+            ];
+
+            // Normalizar filas
+            for(let i=0; i < transitionMatrix.length; i++) {
+                const sum = transitionMatrix[i].reduce((a, b) => a + b, 0);
+                if (sum > 0 && Math.abs(sum - 1.0) > 0.01) { 
+                    for(let j=0; j < transitionMatrix[i].length; j++) transitionMatrix[i][j] /= sum;
+                } else if (sum === 0) { 
+                     for(let j=0; j < transitionMatrix[i].length; j++) transitionMatrix[i][j] = 1 / transitionMatrix[i].length;
+                }
+            }
+
+            const length = parseInt(document.getElementById('markovLength').value);
+            const toneMelody = [];
+            const abcNotes = [];
+            let currentTime = 0;
+            let currentStateIndex = 0; // Empezar con C4
+
+            for (let i = 0; i < length; i++) {
+                const currentMidi = states[currentStateIndex];
+                const toneJsDur = baseDuration; // "8n"
+
+                toneMelody.push({ note: Tone.Frequency(currentMidi, "midi").toNote(), time: currentTime, duration: toneJsDur });
+                abcNotes.push(midiToAbcNoteName(currentMidi) + getAbcDurationStringFromNotation(toneJsDur));
+                currentTime += Tone.Time(toneJsDur).toSeconds();
+
+                const probabilities = transitionMatrix[currentStateIndex];
+                let random = Math.random();
+                let cumulativeProb = 0;
+                for (let j = 0; j < probabilities.length; j++) {
+                    cumulativeProb += probabilities[j];
+                    if (random < cumulativeProb) {
+                        currentStateIndex = j;
+                        break;
+                    }
+                }
+            }
+            
+            renderAbcScore('abcDisplayMarkov', 'Melodia de Markov', abcNotes);
+            
+            new Tone.Part((time, value) => {
+                synth.triggerAttackRelease(value.note, value.duration, time);
+            }, toneMelody).start(0);
+            Tone.Transport.start();
+            setStatus('statusMarkov', "Reproduciendo melodía de Markov...");
+            setTimeout(() => setStatus('statusMarkov', ""), currentTime * 1000 + 500);
+        }
+
+    </script>
+</body>
+</html>
