@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Distribuciones de Probabilidad en la Música</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      MathJax = {
-        tex: {
-          inlineMath: [['$', '$'], ['\\(', '\\)']],
-          displayMath: [['$$', '$$'], ['\\[', '\\]']],
-          processEscapes: true
-        },
-        svg: {
-          fontCache: 'global'
-        }
-      };
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
     </script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -31,7 +32,7 @@
             background: #fff;
             padding: 10px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
     </style>
     <!-- Chart.js -->
@@ -42,6 +43,7 @@
             background-color: #f0f4f8;
             color: #1e293b;
         }
+
         .distribution-section {
             background-color: #ffffff;
             border-radius: 12px;
@@ -50,17 +52,22 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             transition: transform 0.3s ease-in-out;
         }
+
         .distribution-section:hover {
             transform: translateY(-5px);
         }
-        h1, h2 {
+
+        h1,
+        h2 {
             color: #0f172a;
         }
+
         h2 {
             border-bottom: 2px solid #38bdf8;
             padding-bottom: 8px;
             margin-bottom: 16px;
         }
+
         .formula {
             font-size: 1.1em;
             margin: 16px 0;
@@ -70,6 +77,7 @@
             border-radius: 4px;
             overflow-x: auto;
         }
+
         button {
             background-color: #0ea5e9;
             color: white;
@@ -78,16 +86,22 @@
             font-weight: 600;
             transition: background-color 0.3s ease;
             cursor: pointer;
-            margin-top: 8px; /* Added margin for spacing */
+            margin-top: 8px;
+            /* Added margin for spacing */
         }
+
         button:hover {
             background-color: #0284c7;
         }
+
         button:disabled {
             background-color: #94a3b8;
             cursor: not-allowed;
         }
-        input[type="number"], input[type="text"], select {
+
+        input[type="number"],
+        input[type="text"],
+        select {
             border: 1px solid #cbd5e1;
             padding: 8px 12px;
             border-radius: 6px;
@@ -95,6 +109,7 @@
             margin-bottom: 8px;
             width: auto;
         }
+
         .controls-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -102,28 +117,33 @@
             align-items: center;
             margin-bottom: 16px;
         }
+
         .info-box {
             background-color: #f1f5f9;
             padding: 12px;
             border-radius: 8px;
             margin-top: 12px;
         }
+
         #enableAudioButton {
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 1000;
             background-color: #10b981;
-            box-shadow: 0 4px 14px 0 rgba(0,0,0,0.15);
+            box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.15);
         }
+
         #enableAudioButton:hover {
             background-color: #059669;
         }
+
         .status-message {
             font-style: italic;
             color: #475569;
             margin-top: 8px;
         }
+
         .markov-matrix-container {
             display: grid;
             grid-template-columns: repeat(4, auto);
@@ -133,32 +153,41 @@
             margin-bottom: 10px;
             font-size: 0.9em;
         }
+
         .markov-matrix-container input {
             width: 50px;
+            /* Increased from 50px */
             padding: 4px;
             text-align: center;
         }
+
         .markov-matrix-label {
             font-weight: bold;
             text-align: center;
         }
-        .abc-display { /* Style for the sheet music container */
+
+        .abc-display {
+            /* Style for the sheet music container */
             margin-top: 16px;
             padding: 8px;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             background-color: #f8fafc;
-            overflow-x: auto; /* For very long scores */
-            min-height: 80px; /* Minimum height to avoid collapse */
+            overflow-x: auto;
+            /* For very long scores */
+            min-height: 80px;
+            /* Minimum height to avoid collapse */
         }
     </style>
 </head>
+
 <body class="p-4 md:p-8">
 
     <header class="text-center mb-12">
         <h1 class="text-4xl md:text-5xl font-bold mb-4">Música Probabilística: Una Aventura Sonora</h1>
         <p class="text-lg md:text-xl text-slate-700 max-w-3xl mx-auto">
-            Explora cómo las distribuciones de probabilidad pueden ser herramientas creativas para componer melodías y secuencias musicales.
+            Explora cómo las distribuciones de probabilidad pueden ser herramientas creativas para componer melodías y
+            secuencias musicales.
             Ajusta los parámetros, genera música, ¡escucha los resultados y ve la partitura!
         </p>
     </header>
@@ -170,19 +199,29 @@
         <div class="distribution-section">
             <h2 class="text-2xl font-semibold">Introducción: Probabilidad y Música</h2>
             <p class="mb-4">
-                La música, en su esencia, es una secuencia de eventos sonoros organizados en el tiempo. La teoría de la probabilidad nos ofrece un marco matemático para modelar la incertidumbre y la aleatoriedad. Al aplicar estos conceptos a la música, podemos explorar nuevas formas de composición, generando texturas, melodías y ritmos con un grado controlado de sorpresa y estructura.
+                La música, en su esencia, es una secuencia de eventos sonoros organizados en el tiempo. La teoría de la
+                probabilidad nos ofrece un marco matemático para modelar la incertidumbre y la aleatoriedad. Al aplicar
+                estos conceptos a la música, podemos explorar nuevas formas de composición, generando texturas, melodías
+                y ritmos con un grado controlado de sorpresa y estructura.
             </p>
             <p>
-                Desde simples elecciones al azar hasta complejos procesos estocásticos, las distribuciones de probabilidad permiten a los compositores delegar ciertas decisiones creativas a modelos matemáticos, resultando en obras que pueden ser tanto predecibles en su carácter general como impredecibles en sus detalles específicos. Esta presentación te guiará a través de varias distribuciones y cómo pueden inspirar la creación musical.
+                Desde simples elecciones al azar hasta complejos procesos estocásticos, las distribuciones de
+                probabilidad permiten a los compositores delegar ciertas decisiones creativas a modelos matemáticos,
+                resultando en obras que pueden ser tanto predecibles en su carácter general como impredecibles en sus
+                detalles específicos. Esta presentación te guiará a través de varias distribuciones y cómo pueden
+                inspirar la creación musical.
             </p>
             <div class="info-box">
-                <p><strong>Nota:</strong> Para escuchar las melodías generadas, asegúrate de hacer clic en el botón "Habilitar Audio" (puede aparecer en la esquina inferior derecha) y luego en los botones "Generar y Reproducir Melodía" de cada sección. La partitura aparecerá debajo del botón.</p>
+                <p><strong>Nota:</strong> Para escuchar las melodías generadas, asegúrate de hacer clic en el botón
+                    "Habilitar Audio" (puede aparecer en la esquina inferior derecha) y luego en los botones "Generar y
+                    Reproducir Melodía" de cada sección. La partitura aparecerá debajo del botón.</p>
             </div>
         </div>
 
         <div id="uniform" class="distribution-section">
             <h2 class="text-2xl font-semibold">1. Distribución Uniforme</h2>
-            <p class="mb-2">Asigna la misma probabilidad a cada resultado posible dentro de un rango continuo o discreto.</p>
+            <p class="mb-2">Asigna la misma probabilidad a cada resultado posible dentro de un rango continuo o
+                discreto.</p>
             <p class="formula">Continua: $f(x) = \frac{1}{b-a}$ para $a \le x \le b$</p>
             <p class="text-sm text-gray-600">Donde:</p>
             <ul class="list-disc list-inside text-sm text-gray-600">
@@ -199,9 +238,12 @@
                 <li>$k_1, k_2, ..., k_n$: Los $n$ posibles valores que puede tomar $X$</li>
             </ul>
             <div class="info-box">
-                <p><strong>Contexto Histórico:</strong> Es la distribución más fundamental, implícita en juegos de azar antiguos (dados, monedas).</p>
-                <p><strong>Compositores y Obras:</strong> Usada en música aleatoria simple. John Cage la exploró en obras como "Music of Changes".</p>
-                <p><strong>Aplicación Musical:</strong> Selección aleatoria de notas de una escala definida, duraciones o cualquier parámetro musical.</p>
+                <p><strong>Contexto Histórico:</strong> Es la distribución más fundamental, implícita en juegos de azar
+                    antiguos (dados, monedas).</p>
+                <p><strong>Compositores y Obras:</strong> Usada en música aleatoria simple. John Cage la exploró en
+                    obras como "Music of Changes".</p>
+                <p><strong>Aplicación Musical:</strong> Selección aleatoria de notas de una escala definida, duraciones
+                    o cualquier parámetro musical.</p>
             </div>
             <div class="chart-container">
                 <canvas id="uniformChart"></canvas>
@@ -231,17 +273,26 @@
                 <li>$1-p$: Probabilidad de fracaso</li>
             </ul>
             <div class="info-box">
-                 <p><strong>Contexto Histórico:</strong> Nombrada por Jacob Bernoulli (siglo XVII-XVIII).</p>
-                 <p><strong>Aplicación Musical:</strong> Decidir si una nota se toca o es un silencio; elegir entre dos alturas, duraciones o articulaciones.</p>
+                <p><strong>Contexto Histórico:</strong> Nombrada por Jacob Bernoulli (siglo XVII-XVIII).</p>
+                <p><strong>Aplicación Musical:</strong> Decidir si una nota se toca o es un silencio; elegir entre dos
+                    alturas, duraciones o articulaciones.</p>
             </div>
             <div class="chart-container">
                 <canvas id="bernoulliChart"></canvas>
             </div>
             <div class="controls-grid">
                 <label>Probabilidad de Éxito (p):</label>
-                <input type="number" id="bernoulliP" value="0.5" min="0" max="1" step="0.01" onchange="updateBernoulliChart()">
+                <input type="number" id="bernoulliP" value="0.5" min="0" max="1" step="0.01"
+                    onchange="updateBernoulliChart()">
                 <label>Número de Eventos:</label>
-                <input type="number" id="bernoulliNumEvents" value="10" min="1" max="50" onchange="updateBernoulliChart()">
+                <input type="number" id="bernoulliNumEvents" value="10" min="1" max="50"
+                    onchange="updateBernoulliChart()">
+                <label>Nota Éxito (MIDI):</label>
+                <input type="number" id="bernoulliNoteSuccess" value="60" min="0" max="127"
+                    onchange="updateBernoulliChart()">
+                <label>Nota Fracaso (MIDI, dejar vacío para silencio):</label>
+                <input type="number" id="bernoulliNoteFailure" value="" min="0" max="127"
+                    onchange="updateBernoulliChart()">
                 <button onclick="playBernoulliMelody()">Generar y Reproducir Melodía</button>
             </div>
             <div id="abcDisplayBernoulli" class="abc-display"></div>
@@ -263,7 +314,8 @@
             </ul>
             <div class="info-box">
                 <p><strong>Contexto Histórico:</strong> También desarrollada por Jacob Bernoulli.</p>
-                <p><strong>Aplicación Musical:</strong> Número de notas acentuadas en una frase; densidad de notas en un compás.</p>
+                <p><strong>Aplicación Musical:</strong> Número de notas acentuadas en una frase; densidad de notas en un
+                    compás.</p>
             </div>
             <div class="chart-container">
                 <canvas id="binomialChart"></canvas>
@@ -272,7 +324,11 @@
                 <label>Número de Ensayos (n):</label>
                 <input type="number" id="binomialN" value="10" min="1" max="50" onchange="updateBinomialChart()">
                 <label>Probabilidad de Éxito (p):</label>
-                <input type="number" id="binomialP" value="0.5" min="0" max="1" step="0.01" onchange="updateBinomialChart()">
+                <input type="number" id="binomialP" value="0.5" min="0" max="1" step="0.01"
+                    onchange="updateBinomialChart()">
+                <label>Nota Base (MIDI):</label>
+                <input type="number" id="binomialBaseNote" value="60" min="0" max="127"
+                    onchange="updateBinomialChart()">
                 <button onclick="playBinomialMelody()">Generar y Reproducir Melodía</button>
             </div>
             <div id="abcDisplayBinomial" class="abc-display"></div>
@@ -293,7 +349,8 @@
             </ul>
             <div class="info-box">
                 <p><strong>Contexto Histórico:</strong> Siméon Denis Poisson (siglo XIX).</p>
-                <p><strong>Compositores y Obras:</strong> Iannis Xenakis ("Metastaseis", "Pithoprakta") para densidad de eventos sonoros.</p>
+                <p><strong>Compositores y Obras:</strong> Iannis Xenakis ("Metastaseis", "Pithoprakta") para densidad de
+                    eventos sonoros.</p>
                 <p><strong>Aplicación Musical:</strong> Número de notas por compás; aparición de eventos sonoros.</p>
             </div>
             <div class="chart-container">
@@ -301,9 +358,13 @@
             </div>
             <div class="controls-grid">
                 <label>Tasa Media ($\lambda$):</label>
-                <input type="number" id="poissonLambda" value="3" min="0" max="20" step="0.1" onchange="updatePoissonChart()">
+                <input type="number" id="poissonLambda" value="3" min="0" max="20" step="0.1"
+                    onchange="updatePoissonChart()">
                 <label>Número de Intervalos:</label>
-                <input type="number" id="poissonNumIntervals" value="8" min="1" max="50" onchange="updatePoissonChart()">
+                <input type="number" id="poissonNumIntervals" value="8" min="1" max="50"
+                    onchange="updatePoissonChart()">
+                <label>Nota Fija (MIDI):</label>
+                <input type="number" id="poissonNote" value="60" min="0" max="127" onchange="updatePoissonChart()">
                 <button onclick="playPoissonMelody()">Generar y Reproducir Melodía</button>
             </div>
             <div id="abcDisplayPoisson" class="abc-display"></div>
@@ -313,7 +374,8 @@
         <div id="normal" class="distribution-section">
             <h2 class="text-2xl font-semibold">5. Distribución Normal (Gaussiana)</h2>
             <p class="mb-2">Distribución continua en forma de campana.</p>
-            <p class="formula">$f(x | \mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}$</p>
+            <p class="formula">$f(x | \mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}$
+            </p>
             <p class="text-sm text-gray-600">Donde:</p>
             <ul class="list-disc list-inside text-sm text-gray-600">
                 <li>$f(x)$: Función de densidad de probabilidad</li>
@@ -326,7 +388,8 @@
             </ul>
             <div class="info-box">
                 <p><strong>Contexto Histórico:</strong> De Moivre, Laplace, Gauss (siglo XVIII-XIX).</p>
-                <p><strong>Aplicación Musical:</strong> Alturas agrupadas alrededor de una nota central; dinámicas; duraciones.</p>
+                <p><strong>Aplicación Musical:</strong> Alturas agrupadas alrededor de una nota central; dinámicas;
+                    duraciones.</p>
             </div>
             <div class="chart-container">
                 <canvas id="normalChart"></canvas>
@@ -335,7 +398,10 @@
                 <label>Media ($\mu$):</label>
                 <input type="number" id="normalMean" value="60" min="0" max="127" onchange="updateNormalChart()">
                 <label>Desv. Estándar ($\sigma$):</label>
-                <input type="number" id="normalStdDev" value="5" min="0.1" max="20" step="0.1" onchange="updateNormalChart()">
+                <input type="number" id="normalStdDev" value="5" min="0.1" max="20" step="0.1"
+                    onchange="updateNormalChart()">
+                <label>Número de Notas:</label>
+                <input type="number" id="normalNumNotes" value="8" min="1" max="16" onchange="updateNormalChart()">
                 <button onclick="playNormalMelody()">Generar y Reproducir Melodía</button>
             </div>
             <div id="abcDisplayNormal" class="abc-display"></div>
@@ -362,17 +428,19 @@
             </div>
             <div class="controls-grid">
                 <label>Tasa ($\lambda$):</label>
-                <input type="number" id="expoLambda" value="2.0" min="0" max="10" step="0.1" onchange="updateExponentialChart()">
+                <input type="number" id="expoLambda" value="2.0" min="0" max="10" step="0.1"
+                    onchange="updateExponentialChart()">
                 <label>Nota Fija (MIDI):</label>
                 <input type="number" id="expoNote" value="60" min="0" max="127" onchange="updateExponentialChart()">
                 <label>Número de Duraciones:</label>
-                <input type="number" id="expoNumDurations" value="12" min="1" max="50" onchange="updateExponentialChart()">
+                <input type="number" id="expoNumDurations" value="12" min="1" max="50"
+                    onchange="updateExponentialChart()">
                 <button onclick="playExponentialMelody()">Generar y Reproducir Melodía</button>
             </div>
             <div id="abcDisplayExponential" class="abc-display"></div>
             <p id="statusExponential" class="status-message"></p>
         </div>
-        
+
         <div id="markov" class="distribution-section">
             <h2 class="text-2xl font-semibold">7. Cadenas de Markov</h2>
             <p class="mb-2">Secuencia de eventos donde la probabilidad de cada evento depende del estado anterior.</p>
@@ -386,43 +454,186 @@
             </ul>
             <div class="info-box">
                 <p><strong>Contexto Histórico:</strong> Andrey Markov (principios s. XX).</p>
-                <p><strong>Compositores y Obras:</strong> Hiller & Isaacson ("Illiac Suite"), Xenakis ("Analogique A-B").</p>
-                <p><strong>Aplicación Musical:</strong> Generar secuencias de notas con transiciones probabilísticas.</p>
+                <p><strong>Compositores y Obras:</strong> Hiller & Isaacson ("Illiac Suite"), Xenakis ("Analogique
+                    A-B").</p>
+                <p><strong>Aplicación Musical:</strong> Generar secuencias de notas con transiciones probabilísticas.
+                </p>
             </div>
             <div class="chart-container">
                 <canvas id="markovChart"></canvas>
             </div>
             <div class="controls-grid">
-            <div class="mt-6">
-                <p class="mb-2 font-medium">Matriz de Transición (3 estados: C4, E4, G4):</p>
-                <p class="text-sm mb-2">Filas: Actual, Columnas: Siguiente. Suma de fila = 1.</p>
-                <div class="markov-matrix-container">
-                <div class="markov-matrix-label">C4 →</div>
-                <input type="number" id="m00" value="0.5" min="0" max="1" step="0.01" onchange="updateMarkovChart()">
-                <input type="number" id="m01" value="0.3" min="0" max="1" step="0.01" onchange="updateMarkovChart()">
-                <input type="number" id="m02" value="0.2" min="0" max="1" step="0.01" onchange="updateMarkovChart()">
-                <div class="markov-matrix-label">E4 →</div>
-                <input type="number" id="m10" value="0.2" min="0" max="1" step="0.01" onchange="updateMarkovChart()">
-                <input type="number" id="m11" value="0.5" min="0" max="1" step="0.01" onchange="updateMarkovChart()">
-                <input type="number" id="m12" value="0.3" min="0" max="1" step="0.01" onchange="updateMarkovChart()">
-                <div class="markov-matrix-label">G4 →</div>
-                <input type="number" id="m20" value="0.3" min="0" max="1" step="0.01" onchange="updateMarkovChart()">
-                <input type="number" id="m21" value="0.2" min="0" max="1" step="0.01" onchange="updateMarkovChart()">
-                <input type="number" id="m22" value="0.5" min="0" max="1" step="0.01" onchange="updateMarkovChart()">
-                <button onclick="playMarkovMelody()">Generar y Reproducir Melodía</button>
+                <div class="mt-6">
+                    <p class="mb-2 font-medium">Matriz de Transición (8 estados: C4, D4, E4, F4, G4, A4, B4, C5):</p>
+                    <p class="text-sm mb-2">Filas: Actual, Columnas: Siguiente. Suma de fila = 1.</p>
+                    <div class="markov-matrix-container" style="grid-template-columns: repeat(9, auto);">
+                        <div class="markov-matrix-label"></div>
+                        <div class="markov-matrix-label">C4</div>
+                        <div class="markov-matrix-label">D4</div>
+                        <div class="markov-matrix-label">E4</div>
+                        <div class="markov-matrix-label">F4</div>
+                        <div class="markov-matrix-label">G4</div>
+                        <div class="markov-matrix-label">A4</div>
+                        <div class="markov-matrix-label">B4</div>
+                        <div class="markov-matrix-label">C5</div>
+
+                        <div class="markov-matrix-label">C4 →</div>
+                        <input type="number" id="m00" value="0.4" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m01" value="0.2" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m02" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m03" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m04" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m05" value="0.05" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m06" value="0.02" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m07" value="0.03" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+
+                        <div class="markov-matrix-label">D4 →</div>
+                        <input type="number" id="m10" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m11" value="0.3" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m12" value="0.2" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m13" value="0.15" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m14" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m15" value="0.08" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m16" value="0.05" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m17" value="0.02" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+
+                        <div class="markov-matrix-label">E4 →</div>
+                        <input type="number" id="m20" value="0.05" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m21" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m22" value="0.3" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m23" value="0.2" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m24" value="0.15" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m25" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m26" value="0.08" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m27" value="0.02" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+
+                        <div class="markov-matrix-label">F4 →</div>
+                        <input type="number" id="m30" value="0.02" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m31" value="0.08" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m32" value="0.15" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m33" value="0.3" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m34" value="0.2" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m35" value="0.15" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m36" value="0.08" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m37" value="0.02" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+
+                        <div class="markov-matrix-label">G4 →</div>
+                        <input type="number" id="m40" value="0.02" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m41" value="0.05" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m42" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m43" value="0.15" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m44" value="0.3" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m45" value="0.2" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m46" value="0.15" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m47" value="0.03" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+
+                        <div class="markov-matrix-label">A4 →</div>
+                        <input type="number" id="m50" value="0.03" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m51" value="0.08" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m52" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m53" value="0.15" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m54" value="0.2" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m55" value="0.3" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m56" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m57" value="0.04" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+
+                        <div class="markov-matrix-label">B4 →</div>
+                        <input type="number" id="m60" value="0.02" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m61" value="0.05" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m62" value="0.08" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m63" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m64" value="0.15" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m65" value="0.2" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m66" value="0.3" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m67" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+
+                        <div class="markov-matrix-label">C5 →</div>
+                        <input type="number" id="m70" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m71" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m72" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m73" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m74" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m75" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m76" value="0.1" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                        <input type="number" id="m77" value="0.3" min="0" max="1" step="0.01"
+                            onchange="updateMarkovChart()">
+                    </div>
+                    <p class="text-xs text-slate-600 mb-4">Nota: El sistema normalizará filas si no suman 1.</p>
+                    <label>Longitud Melodía: <input type="number" id="markovLength" value="20" class="w-20"></label>
+                    <button onclick="playMarkovMelody()">Generar y Reproducir Melodía de Markov</button>
+                </div>
             </div>
-            <p class="text-xs text-slate-600 mb-4">Nota: El sistema normalizará filas si no suman 1.</p>
-                <label>Longitud Melodía: <input type="number" id="markovLength" value="20" class="w-20"></label>
-            </div>
-            <button onclick="playMarkovMelody()">Generar y Reproducir Melodía de Markov</button>
             <div id="abcDisplayMarkov" class="abc-display"></div>
             <p id="statusMarkov" class="status-message"></p>
-        </div>
 
     </main>
 
     <footer class="text-center mt-12 py-8 border-t border-slate-300">
-        <p class="text-slate-600">&copy; 2024-2025 Música Probabilística Interactiva. Inspirado por las matemáticas y el arte.</p>
+        <p class="text-slate-600">&copy; 2024-2025 Música Probabilística Interactiva. Inspirado por las matemáticas y el
+            arte.</p>
     </footer>
 
     <script>
@@ -452,7 +663,7 @@
                 el.style.color = isError ? 'red' : '#475569';
             }
         }
-        
+
         function stopPreviousMelody() {
             if (synth) {
                 Tone.Transport.stop();
@@ -499,16 +710,16 @@
             if (Math.abs(ratio - 1.5) < 0.01) return "3/2"; // e.g. C3/2 (dotted)
             if (Math.abs(ratio - 0.75) < 0.01) return "3/4"; // e.g. C3/4
             if (Math.abs(ratio - 0.375) < 0.01) return "3/8";
-            
+
             // Fallback para ratios no comunes (puede no ser estándar ABC)
             // Intentar N/M simple
             for (let den = 2; den <= 16; den++) { // Denominadores comunes
-                 for (let num = 1; num <= 32; num++) { // Numeradores comunes
+                for (let num = 1; num <= 32; num++) { // Numeradores comunes
                     if (Math.abs(num / den - ratio) < 0.015) { // Tolerancia un poco mayor
                         // Evitar redundancia con los ya definidos
                         if ((num === 1 && den === 2) || (num === 1 && den === 4) || (num === 1 && den === 8)) continue;
                         if ((num === 2 && den === 1) || (num === 3 && den === 1) || (num === 4 && den === 1)) continue;
-                        if ((num === 3 && den === 2) || (num === 3 && den === 4) || (num===3 && den===8) ) continue;
+                        if ((num === 3 && den === 2) || (num === 3 && den === 4) || (num === 3 && den === 8)) continue;
                         return String(num) + "/" + String(den);
                     }
                 }
@@ -561,7 +772,7 @@
                 const displayElement = document.getElementById(displayId);
                 if (displayElement) {
                     displayElement.innerHTML = ""; // Limpiar partitura anterior
-                    
+
                     // Configuración mejorada para renderización
                     const options = {
                         responsive: "resize",
@@ -605,18 +816,18 @@
             for (let i = 0; i < numNotes; i++) {
                 const randomMidi = Math.floor(Math.random() * (maxNote - minNote + 1)) + minNote;
                 const toneJsDur = baseDuration; // "8n"
-                
+
                 toneMelody.push({ note: Tone.Frequency(randomMidi, "midi").toNote(), time: currentTime, duration: toneJsDur });
-                
+
                 const abcNoteName = midiToAbcNoteName(randomMidi);
                 const abcDur = getAbcDurationStringFromNotation(toneJsDur);
                 abcNotes.push(abcNoteName + abcDur);
-                
+
                 currentTime += Tone.Time(toneJsDur).toSeconds();
             }
-            
+
             renderAbcScore('abcDisplayUniform', 'Melodia Uniforme', abcNotes);
-            
+
             if (toneMelody.length > 0) {
                 new Tone.Part((time, value) => {
                     synth.triggerAttackRelease(value.note, value.duration, time);
@@ -668,7 +879,7 @@
                 Tone.Transport.start();
                 setStatus('statusBernoulli', "Reproduciendo melodía Bernoulli...");
             } else {
-                 setStatus('statusBernoulli', "Melodía Bernoulli generada (posiblemente solo silencios).");
+                setStatus('statusBernoulli', "Melodía Bernoulli generada (posiblemente solo silencios).");
             }
             setTimeout(() => setStatus('statusBernoulli', ""), currentTime * 1000 + 500);
         }
@@ -689,7 +900,7 @@
             const n = parseInt(document.getElementById('binomialN').value);
             const p = parseFloat(document.getElementById('binomialP').value);
             const baseNoteMidi = parseInt(document.getElementById('binomialBaseNote').value);
-            const numMeasures = 4; 
+            const numMeasures = 4;
             const toneMelody = [];
             const abcNotes = [];
             let currentTime = 0;
@@ -698,13 +909,13 @@
             for (let i = 0; i < numMeasures; i++) {
                 const numSuccesses = sampleBinomial(n, p);
                 const pitchMidi = Math.min(127, Math.max(0, baseNoteMidi + numSuccesses));
-                
+
                 toneMelody.push({ note: Tone.Frequency(pitchMidi, "midi").toNote(), time: currentTime, duration: toneJsDur });
                 abcNotes.push(midiToAbcNoteName(pitchMidi) + getAbcDurationStringFromNotation(toneJsDur));
-                
+
                 currentTime += Tone.Time(toneJsDur).toSeconds();
             }
-            
+
             renderAbcScore('abcDisplayBinomial', 'Melodia Binomial', abcNotes);
 
             new Tone.Part((time, value) => {
@@ -739,14 +950,14 @@
             for (let i = 0; i < numIntervals; i++) {
                 const numEventsInInterval = samplePoisson(lambda);
                 const timePerEventSeconds = numEventsInInterval > 0 ? intervalDurationSeconds / numEventsInInterval : intervalDurationSeconds;
-                
+
                 for (let j = 0; j < numEventsInInterval; j++) {
                     const noteActualDurationSeconds = timePerEventSeconds * 0.8; // 80% para separar un poco
                     const toneJsDur = Tone.Time(noteActualDurationSeconds, "s").toNotation(); // Convertir a "8n", "16n", etc.
 
-                    toneMelody.push({ 
-                        note: Tone.Frequency(fixedNoteMidi, "midi").toNote(), 
-                        time: currentTime + j * timePerEventSeconds, 
+                    toneMelody.push({
+                        note: Tone.Frequency(fixedNoteMidi, "midi").toNote(),
+                        time: currentTime + j * timePerEventSeconds,
                         duration: toneJsDur
                     });
                     abcNotes.push(midiToAbcNoteName(fixedNoteMidi) + getAbcDurationStringFromNotation(toneJsDur));
@@ -767,7 +978,7 @@
             }
             setTimeout(() => setStatus('statusPoisson', ""), currentTime * 1000 + 500);
         }
-        
+
         function sampleNormal(mean, stdDev) {
             let u1 = Math.random(); let u2 = Math.random();
             let z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
@@ -790,14 +1001,14 @@
                 const rawPitch = sampleNormal(mean, stdDev);
                 const midiPitch = Math.round(Math.max(0, Math.min(127, rawPitch)));
                 const toneJsDur = baseDuration; // "8n"
-                
+
                 toneMelody.push({ note: Tone.Frequency(midiPitch, "midi").toNote(), time: currentTime, duration: toneJsDur });
                 abcNotes.push(midiToAbcNoteName(midiPitch) + getAbcDurationStringFromNotation(toneJsDur));
                 currentTime += Tone.Time(toneJsDur).toSeconds();
             }
-            
+
             renderAbcScore('abcDisplayNormal', 'Melodia Normal (Gaussiana)', abcNotes);
-            
+
             new Tone.Part((time, value) => {
                 synth.triggerAttackRelease(value.note, value.duration, time);
             }, toneMelody).start(0);
@@ -826,16 +1037,17 @@
 
             for (let i = 0; i < numDurations; i++) {
                 let durationSeconds = sampleExponential(lambda) * DURATION_SCALE_FACTOR;
-                durationSeconds = Math.max(0.1, Math.min(durationSeconds, 2.0)); // Limitar duración
-                const toneJsDur = Tone.Time(durationSeconds, "s").toNotation();
-                
-                toneMelody.push({ 
-                    note: Tone.Frequency(fixedNoteMidi, "midi").toNote(), 
-                    time: currentTime, 
-                    duration: toneJsDur
+                durationSeconds = Math.max(0.05, Math.min(durationSeconds, 4.0)); // Limitar duración a un rango razonable (ej: 32ava a redonda)
+                const toneJsDur = Tone.Time(durationSeconds, "s").toNotation(); // Convertir a notación de Tone.js
+
+                toneMelody.push({
+                    note: Tone.Frequency(fixedNoteMidi, "midi").toNote(),
+                    time: currentTime,
+                    duration: toneJsDur // Usar la duración calculada para Tone.js
                 });
+                // Convertir la duración calculada a notación ABC
                 abcNotes.push(midiToAbcNoteName(fixedNoteMidi) + getAbcDurationStringFromNotation(toneJsDur));
-                currentTime += durationSeconds;
+                currentTime += durationSeconds; // Avanzar el tiempo por la duración real en segundos
             }
 
             renderAbcScore('abcDisplayExponential', 'Melodia Exponencial', abcNotes);
@@ -865,12 +1077,12 @@
             ];
 
             // Normalizar filas
-            for(let i=0; i < transitionMatrix.length; i++) {
+            for (let i = 0; i < transitionMatrix.length; i++) {
                 const sum = transitionMatrix[i].reduce((a, b) => a + b, 0);
-                if (sum > 0 && Math.abs(sum - 1.0) > 0.01) { 
-                    for(let j=0; j < transitionMatrix[i].length; j++) transitionMatrix[i][j] /= sum;
-                } else if (sum === 0) { 
-                     for(let j=0; j < transitionMatrix[i].length; j++) transitionMatrix[i][j] = 1 / transitionMatrix[i].length;
+                if (sum > 0 && Math.abs(sum - 1.0) > 0.01) {
+                    for (let j = 0; j < transitionMatrix[i].length; j++) transitionMatrix[i][j] /= sum;
+                } else if (sum === 0) {
+                    for (let j = 0; j < transitionMatrix[i].length; j++) transitionMatrix[i][j] = 1 / transitionMatrix[i].length;
                 }
             }
 
@@ -899,9 +1111,9 @@
                     }
                 }
             }
-            
+
             renderAbcScore('abcDisplayMarkov', 'Melodia de Markov', abcNotes);
-            
+
             new Tone.Part((time, value) => {
                 synth.triggerAttackRelease(value.note, value.duration, time);
             }, toneMelody).start(0);
@@ -913,4 +1125,5 @@
     </script>
     <script src="charts.js"></script>
 </body>
+
 </html>
